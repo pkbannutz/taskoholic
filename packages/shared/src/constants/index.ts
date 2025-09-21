@@ -95,3 +95,4 @@ export const BREAKPOINTS = {
   DESKTOP: 1024,
   LARGE: 1280,
 } as const;
+

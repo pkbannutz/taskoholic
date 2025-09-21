@@ -146,3 +146,4 @@ export const calculateStreak = (dates: Date[]): number => {
   
   return streak;
 };
+

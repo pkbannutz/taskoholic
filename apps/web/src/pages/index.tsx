@@ -165,17 +165,17 @@ export default function Home() {
         {currentView === 'today' && (
           <div className="px-6 py-8">
             <div className="max-w-lg mx-auto text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-800 mb-3">
+              <h2 className="text-4xl font-bold text-slate-800 mb-4">
                 What needs your attention?
               </h2>
-              <p className="text-slate-600 text-lg">
+              <p className="text-slate-600 text-xl font-light">
                 Capture it, focus on it, complete it.
               </p>
             </div>
 
             {/* Premium Task Input */}
             <div className="max-w-lg mx-auto mb-8">
-              <div className="card-premium p-6">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-large border border-white/20 p-6">
                 <div className="flex gap-3">
                   <input
                     type="text"
@@ -183,11 +183,11 @@ export default function Home() {
                     onChange={(e) => setNewTask(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addTask()}
                     placeholder="Enter a task or idea..."
-                    className="input-premium flex-1"
+                    className="flex-1 px-4 py-4 rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ease-out text-lg"
                   />
                   <button
                     onClick={addTask}
-                    className="btn-primary px-6"
+                    className="px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl shadow-medium hover:shadow-large hover:scale-105 transform transition-all duration-200 ease-out font-semibold"
                   >
                     Add
                   </button>
@@ -211,45 +211,49 @@ export default function Home() {
                     <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
                     Active Tasks
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {activeTasks.map((task) => (
-                      <div key={task.id} className="card-interactive p-6">
+                      <div key={task.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-large border border-white/20 p-6 hover:shadow-glow hover:scale-[1.02] transition-all duration-300 ease-out">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h4 className="text-slate-800 font-medium text-lg mb-3">{task.text}</h4>
-                            <div className="flex gap-2 flex-wrap">
+                            <h4 className="text-slate-800 font-semibold text-xl mb-4 leading-relaxed">{task.text}</h4>
+                            <div className="flex gap-3 flex-wrap">
                               <button
                                 onClick={() => startFocusSession(task, 5)}
-                                className="btn-timer bg-gradient-to-r from-success-500 to-success-600 text-white"
+                                className="px-6 py-3 bg-gradient-to-r from-success-500 to-success-600 text-white rounded-xl shadow-medium hover:shadow-glow-success hover:scale-105 transform transition-all duration-200 ease-out font-semibold text-sm"
                               >
                                 ▶️ 5m
                               </button>
                               <button
                                 onClick={() => startFocusSession(task, 15)}
-                                className="btn-timer bg-gradient-to-r from-primary-500 to-primary-600 text-white"
+                                className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl shadow-medium hover:shadow-glow hover:scale-105 transform transition-all duration-200 ease-out font-semibold text-sm"
                               >
                                 ▶️ 15m
                               </button>
                               <button
                                 onClick={() => startFocusSession(task, 25)}
-                                className="btn-timer bg-gradient-to-r from-accent-500 to-accent-600 text-white"
+                                className="px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl shadow-medium hover:shadow-large hover:scale-105 transform transition-all duration-200 ease-out font-semibold text-sm"
                               >
                                 ▶️ 25m
                               </button>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2">
+                          <div className="flex flex-col gap-3">
                             <button
                               onClick={() => completeTask(task.id)}
-                              className="w-10 h-10 bg-gradient-to-r from-success-500 to-success-600 text-white rounded-lg flex items-center justify-center hover:scale-105 transform transition-all duration-200 shadow-medium"
+                              className="w-12 h-12 bg-gradient-to-r from-success-500 to-success-600 text-white rounded-xl flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-medium hover:shadow-glow-success"
                             >
-                              ✓
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
                             </button>
                             <button
                               onClick={() => deleteTask(task.id)}
-                              className="w-10 h-10 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center hover:bg-slate-200 hover:text-slate-700 transition-all duration-200"
+                              className="w-12 h-12 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center hover:bg-slate-200 hover:text-red-500 transition-all duration-200"
                             >
-                              ×
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
                             </button>
                           </div>
                         </div>
@@ -326,16 +330,20 @@ export default function Home() {
         </main>
 
         {/* Premium Bottom Navigation */}
-        <nav className="mobile-nav">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/50 z-50">
           <div className="max-w-lg mx-auto px-6">
-            <div className="flex justify-around py-3">
+            <div className="flex justify-around py-4">
               {views.map((view) => (
                 <button
                   key={view.id}
                   onClick={() => setCurrentView(view.id as any)}
-                  className={`nav-item ${currentView === view.id ? 'active' : ''}`}
+                  className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 ease-out ${
+                    currentView === view.id
+                      ? 'bg-gradient-to-r from-primary-50 to-primary-100 text-primary-700 shadow-soft scale-105'
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  }`}
                 >
-                  <span className="text-xl mb-1">{view.icon}</span>
+                  <span className="text-2xl mb-1">{view.icon}</span>
                   <span className="text-xs font-semibold">{view.name}</span>
                 </button>
               ))}

@@ -179,3 +179,4 @@ export type Theme = z.infer<typeof ThemeSchema>;
 // Soundscape Types
 export const SoundscapeSchema = z.enum(['SILENCE', 'RAINFALL', 'CAFE', 'WHITE_NOISE']);
 export type Soundscape = z.infer<typeof SoundscapeSchema>;
+
