@@ -1,32 +1,130 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import HabitsTracker from '../components/HabitsTracker'
+import JournalEditor from '../components/JournalEditor'
+import WeeklyPlanner from '../components/WeeklyPlanner'
+
+interface Task {
+  id: string
+  text: string
+  completed: boolean
+  createdAt: Date
+  completedAt?: Date
+}
 
 export default function Home() {
-  const [tasks, setTasks] = useState<string[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [newTask, setNewTask] = useState('')
   const [currentView, setCurrentView] = useState<'today' | 'weekly' | 'habits' | 'journal'>('today')
+  const [isFocusMode, setIsFocusMode] = useState(false)
+  const [focusTask, setFocusTask] = useState<Task | null>(null)
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [isRunning, setIsRunning] = useState(false)
+  const [completedToday, setCompletedToday] = useState(0)
 
   const addTask = () => {
     if (newTask.trim()) {
-      setTasks([...tasks, newTask.trim()])
+      const task: Task = {
+        id: Date.now().toString(),
+        text: newTask.trim(),
+        completed: false,
+        createdAt: new Date()
+      }
+      setTasks([task, ...tasks])
       setNewTask('')
     }
   }
 
-  const completeTask = (index: number) => {
-    setTasks(tasks.filter((_, i) => i !== index))
+  const completeTask = (id: string) => {
+    setTasks(tasks.map(task => 
+      task.id === id 
+        ? { ...task, completed: true, completedAt: new Date() }
+        : task
+    ))
+    setCompletedToday(completedToday + 1)
   }
 
-  const startTimer = (duration: number) => {
-    alert(`Starting ${duration} minute timer! 🚀`)
+  const deleteTask = (id: string) => {
+    setTasks(tasks.filter(task => task.id !== id))
+  }
+
+  const startFocusSession = (task: Task, duration: number) => {
+    setFocusTask(task)
+    setTimeLeft(duration * 60)
+    setIsRunning(true)
+    setIsFocusMode(true)
+  }
+
+  const exitFocusMode = () => {
+    setIsFocusMode(false)
+    setFocusTask(null)
+    setTimeLeft(0)
+    setIsRunning(false)
+  }
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(timeLeft - 1)
+      }, 1000)
+    } else if (timeLeft === 0 && isRunning) {
+      // Timer completed
+      setIsRunning(false)
+      // Could add notification here
+    }
+    return () => clearInterval(interval)
+  }, [isRunning, timeLeft])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
   const views = [
-    { id: 'today', name: 'Today', icon: '📅' },
-    { id: 'weekly', name: 'Weekly', icon: '📊' },
-    { id: 'habits', name: 'Habits', icon: '🔥' },
-    { id: 'journal', name: 'Journal', icon: '📝' },
+    { id: 'today', name: 'Today', icon: '📅', color: 'from-primary-500 to-primary-600' },
+    { id: 'weekly', name: 'Weekly', icon: '📊', color: 'from-success-500 to-success-600' },
+    { id: 'habits', name: 'Habits', icon: '🔥', color: 'from-accent-500 to-accent-600' },
+    { id: 'journal', name: 'Journal', icon: '📝', color: 'from-slate-500 to-slate-600' },
   ]
+
+  const activeTasks = tasks.filter(task => !task.completed)
+  const completedTasks = tasks.filter(task => task.completed)
+
+  if (isFocusMode && focusTask) {
+    return (
+      <>
+        <Head>
+          <title>Focus Mode - Taskoholic</title>
+        </Head>
+        <div className="focus-mode">
+          <div className="text-center">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">{focusTask.text}</h2>
+              <div className="text-6xl font-mono font-bold text-white mb-4">
+                {formatTime(timeLeft)}
+              </div>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setIsRunning(!isRunning)}
+                  className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200"
+                >
+                  {isRunning ? '⏸️ Pause' : '▶️ Resume'}
+                </button>
+                <button
+                  onClick={exitFocusMode}
+                  className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200"
+                >
+                  Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -36,127 +134,209 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-journal-50 to-white journal-paper">
-        {/* Header */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-journal-200 sticky top-0 z-40">
-          <div className="max-w-md mx-auto px-4 py-3">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        {/* Premium Header */}
+        <header className="nav-premium sticky top-0 z-40">
+          <div className="max-w-lg mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-journal-800">Taskoholic</h1>
-              <div className="text-sm text-journal-600">
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">T</span>
+                </div>
+                <h1 className="text-xl font-bold text-gradient">Taskoholic</h1>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-medium text-slate-700">
+                  {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {completedToday} completed today
+                </div>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="max-w-md mx-auto px-4 py-6 pb-24">
-          {/* Task Input */}
-          <div className="mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-journal-200 p-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addTask()}
-                  placeholder="What needs your attention today?"
-                  className="flex-1 text-journal-800 placeholder-journal-400 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-lg px-3 py-2 border border-journal-200"
-                />
-                <button
-                  onClick={addTask}
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                  Add
-                </button>
+        {/* Hero Section */}
+        {currentView === 'today' && (
+          <div className="px-6 py-8">
+            <div className="max-w-lg mx-auto text-center mb-8">
+              <h2 className="text-3xl font-bold text-slate-800 mb-3">
+                What needs your attention?
+              </h2>
+              <p className="text-slate-600 text-lg">
+                Capture it, focus on it, complete it.
+              </p>
+            </div>
+
+            {/* Premium Task Input */}
+            <div className="max-w-lg mx-auto mb-8">
+              <div className="card-premium p-6">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                    placeholder="Enter a task or idea..."
+                    className="input-premium flex-1"
+                  />
+                  <button
+                    onClick={addTask}
+                    className="btn-primary px-6"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Today's Tasks */}
+        {/* Main Content */}
+        <main className="max-w-lg mx-auto px-6 pb-32">
+          <div className={`transition-all duration-500 ease-in-out ${
+            currentView === 'today' ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-4'
+          }`}>
           {currentView === 'today' && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-journal-800 mb-4">Today's Focus</h2>
-              
-              {tasks.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-journal-200 p-8 text-center">
-                  <div className="text-4xl mb-3">🎯</div>
-                  <p className="text-journal-600">No tasks yet. Add one above to get started!</p>
-                </div>
-              ) : (
-                tasks.map((task, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-sm border border-journal-200 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-journal-800 font-medium">{task}</h3>
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => startTimer(5)}
-                            className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-                          >
-                            ▶️ 5m
-                          </button>
-                          <button
-                            onClick={() => startTimer(15)}
-                            className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-                          >
-                            ▶️ 15m
-                          </button>
-                          <button
-                            onClick={() => startTimer(25)}
-                            className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-                          >
-                            ▶️ 25m
-                          </button>
+            <div className="space-y-4">
+              {/* Active Tasks */}
+              {activeTasks.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+                    Active Tasks
+                  </h3>
+                  <div className="space-y-3">
+                    {activeTasks.map((task) => (
+                      <div key={task.id} className="card-interactive p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="text-slate-800 font-medium text-lg mb-3">{task.text}</h4>
+                            <div className="flex gap-2 flex-wrap">
+                              <button
+                                onClick={() => startFocusSession(task, 5)}
+                                className="btn-timer bg-gradient-to-r from-success-500 to-success-600 text-white"
+                              >
+                                ▶️ 5m
+                              </button>
+                              <button
+                                onClick={() => startFocusSession(task, 15)}
+                                className="btn-timer bg-gradient-to-r from-primary-500 to-primary-600 text-white"
+                              >
+                                ▶️ 15m
+                              </button>
+                              <button
+                                onClick={() => startFocusSession(task, 25)}
+                                className="btn-timer bg-gradient-to-r from-accent-500 to-accent-600 text-white"
+                              >
+                                ▶️ 25m
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => completeTask(task.id)}
+                              className="w-10 h-10 bg-gradient-to-r from-success-500 to-success-600 text-white rounded-lg flex items-center justify-center hover:scale-105 transform transition-all duration-200 shadow-medium"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => deleteTask(task.id)}
+                              className="w-10 h-10 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center hover:bg-slate-200 hover:text-slate-700 transition-all duration-200"
+                            >
+                              ×
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => completeTask(index)}
-                        className="text-journal-400 hover:text-green-600 transition-colors p-1"
-                      >
-                        ✅
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                ))
+                </div>
+              )}
+
+              {/* Completed Tasks */}
+              {completedTasks.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-success-500 rounded-full"></span>
+                    Completed Today
+                  </h3>
+                  <div className="space-y-2">
+                    {completedTasks.slice(0, 5).map((task) => (
+                      <div key={task.id} className="card-premium p-4 opacity-75">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-gradient-to-r from-success-500 to-success-600 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                          <span className="text-slate-600 line-through">{task.text}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {completedTasks.length > 5 && (
+                      <div className="text-center text-slate-500 text-sm py-2">
+                        +{completedTasks.length - 5} more completed
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {tasks.length === 0 && (
+                <div className="card-premium p-12 text-center">
+                  <div className="text-6xl mb-4 animate-float">🎯</div>
+                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                    Ready to focus?
+                  </h3>
+                  <p className="text-slate-600">
+                    Add your first task above to start building momentum.
+                  </p>
+                </div>
               )}
             </div>
           )}
 
-          {/* Other Views Placeholder */}
-          {currentView !== 'today' && (
-            <div className="bg-white rounded-xl shadow-sm border border-journal-200 p-8 text-center">
-              <div className="text-4xl mb-3">
-                {views.find(v => v.id === currentView)?.icon}
-              </div>
-              <h2 className="text-lg font-semibold text-journal-800 mb-2">
-                {views.find(v => v.id === currentView)?.name} View
-              </h2>
-              <p className="text-journal-600">Coming soon! Focus on your tasks for now.</p>
-            </div>
-          )}
+          </div>
+
+          {/* Weekly View */}
+          <div className={`transition-all duration-500 ease-in-out ${
+            currentView === 'weekly' ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-4'
+          }`}>
+            {currentView === 'weekly' && <WeeklyPlanner />}
+          </div>
+
+          {/* Habits View */}
+          <div className={`transition-all duration-500 ease-in-out ${
+            currentView === 'habits' ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-4'
+          }`}>
+            {currentView === 'habits' && <HabitsTracker />}
+          </div>
+
+          {/* Journal View */}
+          <div className={`transition-all duration-500 ease-in-out ${
+            currentView === 'journal' ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-4'
+          }`}>
+            {currentView === 'journal' && <JournalEditor />}
+          </div>
         </main>
 
-        {/* Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-journal-200 z-50">
-          <div className="max-w-md mx-auto px-4">
-            <div className="flex justify-around py-2">
+        {/* Premium Bottom Navigation */}
+        <nav className="mobile-nav">
+          <div className="max-w-lg mx-auto px-6">
+            <div className="flex justify-around py-3">
               {views.map((view) => (
                 <button
                   key={view.id}
                   onClick={() => setCurrentView(view.id as any)}
-                  className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-                    currentView === view.id
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-journal-500 hover:text-journal-700'
-                  }`}
+                  className={`nav-item ${currentView === view.id ? 'active' : ''}`}
                 >
-                  <span className="text-lg mb-1">{view.icon}</span>
-                  <span className="text-xs font-medium">{view.name}</span>
+                  <span className="text-xl mb-1">{view.icon}</span>
+                  <span className="text-xs font-semibold">{view.name}</span>
                 </button>
               ))}
             </div>
