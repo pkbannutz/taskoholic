@@ -184,41 +184,43 @@ export default function JournalEditor() {
     return formatDate(date)
   }
 
-  // If we're in fullscreen editing mode, show the clean white page
+  // If we're in fullscreen editing mode, show the book-like page
   if (isFullscreen && selectedNote && isEditing) {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col">
-        {/* Fullscreen Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div className="text-sm text-gray-500">
-              {currentNoteIndex + 1} of {filteredNotes.length}
+      <div className="fixed inset-0 book-background z-50 flex flex-col">
+        {/* Book Header */}
+        <div className="book-header">
+          <div className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsFullscreen(false)}
+                className="book-button"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="text-sm text-amber-600">
+                {currentNoteIndex + 1} of {filteredNotes.length}
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setIsEditing(false)
-                setIsFullscreen(false)
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Done
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsEditing(false)
+                  setIsFullscreen(false)
+                }}
+                className="book-button-primary"
+              >
+                Save & Close
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Clean White Editor */}
+        {/* Book Page Editor */}
         <div 
-          className="flex-1 p-8 max-w-4xl mx-auto w-full"
+          className="book-page-editor"
           onTouchStart={handleSwipeStart}
           onTouchMove={handleSwipeMove}
           onTouchEnd={handleSwipeEnd}
@@ -229,25 +231,25 @@ export default function JournalEditor() {
             value={selectedNote.title}
             onChange={(e) => updateNote({ ...selectedNote, title: e.target.value })}
             placeholder="Untitled"
-            className="w-full text-4xl font-light text-gray-900 bg-transparent border-none outline-none mb-8 placeholder-gray-400"
+            className="book-title-input"
           />
           <textarea
             ref={contentRef}
             value={selectedNote.content}
             onChange={(e) => updateNote({ ...selectedNote, content: e.target.value })}
-            placeholder="Start writing..."
-            className="w-full h-full text-lg text-gray-700 bg-transparent border-none outline-none resize-none leading-relaxed placeholder-gray-400"
+            placeholder="Start writing your thoughts..."
+            className="book-content-textarea"
             style={{ minHeight: 'calc(100vh - 200px)' }}
           />
         </div>
 
-        {/* Swipe Indicators */}
+        {/* Page Indicators */}
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2">
           {filteredNotes.map((_, index) => (
             <div
               key={index}
               className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentNoteIndex ? 'bg-blue-600' : 'bg-gray-300'
+                index === currentNoteIndex ? 'bg-amber-600' : 'bg-amber-300'
               }`}
             />
           ))}
@@ -257,47 +259,47 @@ export default function JournalEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+    <div className="min-h-screen book-background">
+      {/* Book Header */}
+      <div className="book-header">
+        <div className="max-w-4xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Journal</h2>
-              <p className="text-sm text-gray-500 mt-1">Capture thoughts, convert to action</p>
-            </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowSidebar(!showSidebar)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+                className="book-button lg:hidden"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <button
-                onClick={createNewNote}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                New Note
-              </button>
+              <div>
+                <h2 className="text-2xl font-serif text-amber-900">My Journal</h2>
+                <p className="text-sm text-amber-700 mt-1">Thoughts and memories</p>
+              </div>
             </div>
+            <button
+              onClick={createNewNote}
+              className="book-button-primary"
+            >
+              + New Page
+            </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto flex">
-        {/* Sidebar */}
+        {/* Book Sidebar */}
         {showSidebar && (
-          <div className="w-80 bg-white border-r border-gray-100 h-screen overflow-hidden flex flex-col">
+          <div className="book-sidebar">
             {/* Search */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-6 border-b border-amber-200">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Search your journal..."
+                className="book-input"
               />
             </div>
 
@@ -311,26 +313,26 @@ export default function JournalEditor() {
                     setIsEditing(false)
                     setCurrentNoteIndex(index)
                   }}
-                  className={`p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedNote?.id === note.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
+                  className={`book-note-item ${
+                    selectedNote?.id === note.id ? 'book-note-active' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate mb-1">
+                      <h3 className="font-serif text-amber-900 truncate mb-1">
                         {note.title || 'Untitled'}
                       </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                      <p className="text-sm text-amber-700 line-clamp-2 mb-2">
                         {note.content.replace(/#/g, '').substring(0, 120)}
                       </p>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-amber-600">
                           {getRelativeTime(note.updatedAt)}
                         </span>
                         {note.tags.slice(0, 2).map((tag) => (
                           <span
                             key={tag}
-                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
+                            className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full"
                           >
                             {tag}
                           </span>
@@ -342,7 +344,7 @@ export default function JournalEditor() {
                         e.stopPropagation()
                         deleteNote(note.id)
                       }}
-                      className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                      className="ml-2 p-1 text-amber-400 hover:text-red-600 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -355,18 +357,18 @@ export default function JournalEditor() {
           </div>
         )}
 
-        {/* Main Editor */}
-        <div className="flex-1 bg-white">
+        {/* Book Pages */}
+        <div className="flex-1">
           {selectedNote ? (
-            <div className="h-screen flex flex-col">
-              {/* Editor Header */}
-              <div className="p-6 border-b border-gray-100">
+            <div className="book-page-container">
+              {/* Book Page Header */}
+              <div className="book-page-header">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-xl font-serif text-amber-900">
                       {selectedNote.title || 'Untitled'}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-amber-600 mt-1">
                       {getRelativeTime(selectedNote.updatedAt)}
                     </p>
                   </div>
@@ -376,40 +378,40 @@ export default function JournalEditor() {
                         setIsEditing(true)
                         setIsFullscreen(true)
                       }}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="book-button-secondary"
                     >
-                      Edit
+                      ✏️ Write
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Editor Content */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                <div className="max-w-3xl mx-auto">
-                  <div className="prose prose-lg max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">
-                      {selectedNote.content || 'Start writing your note...'}
+              {/* Book Page Content */}
+              <div className="book-page-content">
+                <div className="book-text-content">
+                  <div className="book-prose">
+                    <pre className="whitespace-pre-wrap font-serif text-amber-900 leading-relaxed">
+                      {selectedNote.content || 'Start writing your thoughts...'}
                     </pre>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="h-screen flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Select a note to view
+            <div className="book-page-container">
+              <div className="book-empty-state">
+                <div className="text-8xl mb-6">📖</div>
+                <h3 className="text-2xl font-serif text-amber-900 mb-3">
+                  Your Journal Awaits
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  Choose from your notes or create a new one to get started.
+                <p className="text-amber-700 mb-8 max-w-md">
+                  Begin your journey of thoughts, ideas, and memories. Create your first page to start writing.
                 </p>
                 <button
                   onClick={createNewNote}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="book-button-primary text-lg px-8 py-4"
                 >
-                  Create New Note
+                  Start Writing
                 </button>
               </div>
             </div>
